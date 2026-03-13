@@ -1,28 +1,35 @@
 import io
 import os
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware # Added for browser access
 from ultralytics import YOLO
 from PIL import Image
 import uvicorn
 
 app = FastAPI()
 
-# Get the path to your model (assuming it is in the same folder as main.py)
+# Add CORS middleware to allow browser requests from your domain
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all domains; restrict to your site URL later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Get the path to your model
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_PATH, "my_model.pt")
 
-# Load the model once when the server starts
 print(f"Loading YOLO model from {MODEL_PATH}...")
 model = YOLO(MODEL_PATH)
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
-        # Read the uploaded image bytes
         contents = await file.read()
         img = Image.open(io.BytesIO(contents))
 
-        # Run detection (conf 0.5 to be safe, change to 0.8 later)
         results = model.predict(source=img, conf=0.5)
         
         detections = []
@@ -39,5 +46,4 @@ async def predict(file: UploadFile = File(...)):
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
-    # This runs the server on http://127.0.0.1:8000
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=10000) # Ensure host is 0.0.0.0 for Render
