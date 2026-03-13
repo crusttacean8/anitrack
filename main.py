@@ -27,27 +27,32 @@ model = YOLO(MODEL_PATH)
 async def predict(file: UploadFile = File(...)):
     try:
         contents = await file.read()
-        img = Image.open(io.BytesIO(contents))
 
-        results = model.predict(source=img, conf=0.5)
-        
+        img = Image.open(io.BytesIO(contents)).convert("RGB")
+
+        results = model(img)
+
         detections = []
-        if len(results) > 0:
+
+        if results and len(results[0].boxes) > 0:
             for box in results[0].boxes:
                 detections.append({
                     "label": model.names[int(box.cls)],
                     "confidence": round(float(box.conf), 2)
                 })
-        
+
         return {"success": True, "detections": detections}
-    
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
     # Get the port from the environment, default to 10000 if not provided
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 
 
