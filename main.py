@@ -11,8 +11,7 @@ app = FastAPI()
 # Add CORS middleware to allow browser requests from your domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all domains; restrict to your site URL later
-    allow_credentials=True,
+    allow_origins=["https://anitrack.helioho.st"], # Use your specific domain instead of "*"
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -49,5 +48,6 @@ if __name__ == "__main__":
     # Get the port from the environment, default to 10000 if not provided
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 
