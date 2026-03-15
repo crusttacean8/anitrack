@@ -35,10 +35,6 @@ def load_model():
 async def root():
     return {"status": "running"}
 
-@app.get("/ping")
-async def ping():
-    return {"status": "ok"}
-
 # Prediction endpoint
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
