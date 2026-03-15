@@ -12,7 +12,13 @@ app = FastAPI()
 # Allow requests from your frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://anitrack.helioho.st"],
+    allow_origins=[
+        "https://anitrack.helioho.st",
+        "http://anitrack.helioho.st",
+        "https://www.anitrack.helioho.st",
+        "http://www.anitrack.helioho.st"
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
