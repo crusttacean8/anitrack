@@ -4,5 +4,3 @@ ultralytics
 pillow
 python-multipart
 torch
-torchvision
-
