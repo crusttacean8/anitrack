@@ -9,7 +9,7 @@ import traceback
 
 app = FastAPI()
 
-# Allow requests from your frontend
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -36,7 +36,7 @@ def load_model():
     model = YOLO(MODEL_PATH)
     print("Model loaded successfully")
 
-# Health check endpoint
+# checking if the model is running
 @app.get("/")
 async def root():
     return {"status": "running"}
@@ -46,16 +46,14 @@ async def ping():
     return {"status": "ok"}
 
 
-# Prediction endpoint
-@app.post("/predict")
+# Prediction function
 async def predict(file: UploadFile = File(...)):
     try:
         contents = await file.read()
 
         img = Image.open(io.BytesIO(contents)).convert("RGB")
 
-        # Resize large images to reduce memory usage
-        img.thumbnail((640, 640))
+        # to Resize large images to reduce memory usage :)    img.thumbnail((640, 640))
 
         results = model.predict(source=img, conf=0.5, imgsz=640)
 
