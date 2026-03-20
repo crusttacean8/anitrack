@@ -36,7 +36,7 @@ def load_model():
     model = YOLO(MODEL_PATH)
     print("Model loaded successfully")
 
-# Health check endpoint
+# Health check endpoints
 @app.get("/")
 async def root():
     return {"status": "running"}
@@ -46,18 +46,37 @@ async def ping():
     return {"status": "ok"}
 
 
+# yolo resize
+def preprocess_image(img: Image.Image):
+    # Ensure RGB
+    img = img.convert("RGB")
+
+    # Since PHP already resizes to 416x416,
+    # we only ensure max size without stretching
+    img.thumbnail((640, 640))
+
+    return img
+
+
 # Prediction endpoint
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
         contents = await file.read()
 
-        img = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Load image safely
+        img = Image.open(io.BytesIO(contents))
 
-        # Resize large images to reduce memory usage
-        img.thumbnail((640, 640))
+        # Preprocess
+        img = preprocess_image(img)
 
-        results = model.predict(source=img, conf=0.5, imgsz=640)
+        # no redundant resizing
+        results = model.predict(
+            source=img,
+            conf=0.5,
+            imgsz=416,   # match PHP resize for consistency
+            verbose=False
+        )
 
         detections = []
 
@@ -79,6 +98,7 @@ async def predict(file: UploadFile = File(...)):
             "success": False,
             "error": str(e)
         }
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
